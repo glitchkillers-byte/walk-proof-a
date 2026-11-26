@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0b14">
+<title>PokéMafia Gold: try it for 5 days</title>
+<link rel="preload" as="image" href="frames/f001.webp" fetchpriority="high">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background:#0d0b14;color:#fff;font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:inherit}
+.stage{position:fixed;left:0;top:0;width:100%;height:100vh;height:100lvh;z-index:0;background:#0d0b14;overflow:hidden}
+.stage img,.stage canvas{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
+.first{position:relative;z-index:1;min-height:100vh;min-height:100svh;padding:20px 20px 24px;display:flex;flex-direction:column;justify-content:center;gap:12px;background:rgba(13,11,20,.9)}
+.brand{margin:0;font-weight:700;letter-spacing:.02em}
+h1{margin:0;font-size:32px;line-height:1.1;font-weight:800}
+.what{margin:0}
+.deal{border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:14px 16px;background:rgba(13,11,20,.72)}
+.deal h2{margin:0 0 8px;font-size:20px;line-height:1.2}
+.deal ol{margin:0;padding:0 0 0 22px}
+.deal li{margin:4px 0}
+.deal .g{margin:10px 0 0;padding-top:10px;border-top:1px solid rgba(255,255,255,.2)}
+.deal .g b{display:block}
+.cta{display:block;text-align:center;text-decoration:none;font-weight:800;font-size:18px;line-height:1.2;color:#14101f;background:#ffd23f;border-radius:12px;padding:15px 16px}
+.cta:active{background:#f0c020}
+.track{position:relative;z-index:1;height:450vh;height:450lvh;pointer-events:none}
+footer{position:relative;z-index:1;background:#0d0b14;padding:28px 20px 110px;min-height:50vh;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
+footer p{margin:0;color:#d9d6e3}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));background:rgba(13,11,20,.94);border-top:1px solid rgba(255,255,255,.18)}
+.bar[hidden]{display:none}
+/* less motion asked for: one still, no scroll-played walk */
+@media (prefers-reduced-motion: reduce){
+  .stage{position:relative;height:auto}
+  .stage img{position:static;height:auto}
+  .stage canvas{display:none}
+  .track{display:none}
+  .first{background:#0d0b14}
+  footer{min-height:0}
+}
+</style>
+</head>
+<body>
+<main>
+  <section class="first" id="first">
+    <p class="brand">PokéMafia</p>
+    <h1>Know first. Pay shelf price.</h1>
+    <p class="what" id="what">PokéMafia is an Aussie Discord of 7,000+ members. We ping you when sealed product lands or preorders open, so you can buy at the shelf price.</p>
+    <div class="deal" id="deal">
+      <h2>A$10 a month. Try it for 5 days first.</h2>
+      <ol>
+        <li><b>Today: A$0.</b> Card needed to start.</li>
+        <li><b>Before the 5 days end:</b> cancel and pay nothing.</li>
+        <li><b>After that:</b> A$10 a month, billed by Whop.</li>
+      </ol>
+      <p class="g"><b>Cop or your money back</b> Cop nothing in your first paid month? Money back.</p>
+    </div>
+    <a class="cta" id="cta-first" href="https://whop.com/pokemafia/restocker/?utm_source=walk-proof&amp;utm_medium=spike&amp;utm_campaign=12-12">Try Gold for 5 days →</a>
+  </section>
+
+  <div class="stage" id="stage" aria-hidden="true">
+    <img id="poster" src="frames/f001.webp" width="540" height="960" alt="" fetchpriority="high" decoding="async">
+    <canvas id="walk" data-frames="80" width="540" height="960"></canvas>
+  </div>
+
+  <div class="track" id="track"></div>
+</main>
+
+<footer>
+  <p>Sold by PokéMafia Pty Limited · ABN 52 692 503 478</p>
+  <p>Not affiliated with Nintendo, Creatures, GAME FREAK or The Pokémon Company.</p>
+</footer>
+
+<div class="bar" id="bar">
+  <a class="cta" id="cta-bar" href="https://whop.com/pokemafia/restocker/?utm_source=walk-proof&amp;utm_medium=spike&amp;utm_campaign=12-12">Try Gold for 5 days →</a>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var bar = document.getElementById("bar");
+  var first = document.getElementById("cta-first");
+
+  /* The bar shows whenever the first-screen button is not fully on screen. */
+  function syncBar() {
+    var r = first.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var full = r.top >= 0 && r.bottom <= vh && r.height > 0;
+    if (bar.hidden !== full) bar.hidden = full;
+  }
+  syncBar();
+  window.addEventListener("scroll", syncBar, { passive: true });
+  window.addEventListener("resize", syncBar);
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var canvas = document.getElementById("walk");
+  if (reduce || !canvas.getContext) return; /* one still only: the poster picture */
+
+  var N = parseInt(canvas.getAttribute("data-frames"), 10) || 0;
+  if (N < 2) return;
+  var FIRST = Math.min(10, N);
+  var ctx = canvas.getContext("2d", { alpha: false });
+  var frames = new Array(N);   /* loaded Image per frame */
+  var ready = new Array(N);
+  var shown = -1;
+  var want = 0;
+  var queued = false;
+  var stats = window.__walk = { n: N, loaded: 0, firstBatchAt: 0, allAt: 0, order: [] };
+
+  function name(i) { var s = String(i + 1); while (s.length < 3) s = "0" + s; return "frames/f" + s + ".webp"; }
+
+  function nearest(i) {
+    if (ready[i]) return i;
+    for (var d = 1; d < N; d++) {
+      if (i - d >= 0 && ready[i - d]) return i - d;
+      if (i + d < N && ready[i + d]) return i + d;
+    }
+    return -1;
+  }
+
+  function draw() {
+    queued = false;
+    var i = nearest(want);
+    if (i < 0 || i === shown) return;
+    try { ctx.drawImage(frames[i], 0, 0, canvas.width, canvas.height); shown = i; } catch (e) {}
+  }
+  function ask() { if (!queued) { queued = true; requestAnimationFrame(draw); } }
+
+  function onScroll() {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? (window.pageYOffset || document.documentElement.scrollTop) / max : 0;
+    if (p < 0) p = 0; if (p > 1) p = 1;
+    want = Math.round(p * (N - 1));
+    ask();
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+
+  function load(i, done) {
+    var img = new Image();
+    img.decoding = "async";
+    img.onload = function () {
+      var fin = function () { frames[i] = img; ready[i] = true; stats.loaded++; ask(); done(); };
+      if (img.decode) img.decode().then(fin, fin); else fin();
+    };
+    img.onerror = function () { done(); };
+    stats.order.push(i + 1);
+    img.src = name(i);
+  }
+
+  /* a small pool: frames from..to in order, `lanes` at a time */
+  function batch(from, to, lanes, then) {
+    var next = from, open = 0, finished = false;
+    function pump() {
+      if (next >= to && open === 0) { if (!finished) { finished = true; then(); } return; }
+      while (open < lanes && next < to) {
+        open++;
+        load(next++, function () { open--; pump(); });
+      }
+    }
+    pump();
+  }
+
+  /* first 10 frames first, then the rest in the background */
+  batch(0, FIRST, 4, function () {
+    stats.firstBatchAt = performance.now();
+    onScroll();
+    batch(FIRST, N, 4, function () { stats.allAt = performance.now(); });
+  });
+})();
+</script>
+</body>
+</html>
